@@ -1,0 +1,315 @@
+image:
+  repository: ghcr.io/gethomepage/homepage
+  tag: latest
+
+# Enable RBAC. RBAC is necessary to use Kubernetes integration
+enableRbac: true
+
+serviceAccount:
+  # Specify a different service account name
+  name: homepage
+  # Create service account. Needed when RBAC is enabled.
+  create: true
+
+service:
+  main:
+    ports:
+      http:
+        port: 3000
+
+controller:
+  strategy: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25%
+    maxUnavailable: 25%
+
+# Enable the ingress to expose Homepage to the network.
+ingress:
+  main:
+    enabled: true
+    labels:
+      # This label will enable discover of this deployment in Homepage
+      gethomepage.dev/enabled: "true"
+    annotations:
+      # These annotations will configure how this deployment is shown in Homepage
+      gethomepage.dev/name: "Homepage"
+      gethomepage.dev/description: "A modern, secure, highly customizable application dashboard."
+      gethomepage.dev/group: "A New Group"
+      gethomepage.dev/icon: "homepage.png"
+    ingressClassName: "traefik"
+    hosts:
+      - host: homepage.192.168.2.17.sslip.io
+        paths:
+          - path: /
+            pathType: Prefix
+    # tls:
+    #   - hosts:
+    #       - *host
+
+# All the config files for Homepage can be specified under their relevant config block.
+config:
+  # To use an existing ConfigMap uncomment this line and specify the name
+  # useExistingConfigMap: existing-homepage-configmap
+  bookmarks:
+    - Developer:
+        - GitLab:
+            - icon: gitlab.svg
+              href: https://gitlab.com              
+        - GitHub:
+            - icon: github.svg
+              href: https://github.com              
+        - Dev Tools:
+            - icon: https://raw.githubusercontent.com/CorentinTh/it-tools/main/public/favicon-32x32.png
+              href: https://tools.coderstudio.co              
+        - Shadcn/ui:
+            - icon: https://ui.shadcn.com/apple-touch-icon.png
+              href: https://ui.shadcn.com/
+        - Roadmap:
+            - icon: https://roadmap.sh/manifest/apple-touch-icon.png
+              href: https://roadmap.sh/
+  services:
+    - Hypervisor:
+        - Proxmox:
+            icon: proxmox.svg
+            href: "https://pve.homelab.local:8006"
+            description: pve
+            widget:
+                type: proxmox
+                url: "https://192.168.2.5:8006"
+                username: "root@pam!homepage"
+                password: "3fcbb0af-50ff-4d01-a00c-0a02eb0419c3"
+                node: pve
+        
+    - Containers:
+        - Devtron:
+            icon: https://opensourcehub.io/projects/devtron-labs/Devtron-Logo.png 
+            href: "https://devxp.coderstudio.co"
+            description: k8s
+        - Longhorn:
+            icon: longhorn.svg
+            href: "http://longhorn.192.168.2.17.sslip.io"
+            description: k8s storage
+        - Portainer (Oracle Cloud):
+            icon: portainer.svg
+            href: "https://portainer.coderstudio.co"
+            description: docker
+            widget:
+                type: portainer
+                url: "https://portainer.coderstudio.co"
+                env: 2
+                key: "ptr_N8GmmMmQfPLQ0/RwqjYftMsqg621auMhnjwFeB43yIw="
+        - Portainer (Homelab Raspberrypi):
+            icon: portainer.svg
+            href: "http://portianer.homelab.local:10000"
+            description: docker
+            widget:
+                type: portainer
+                url: "http://192.168.2.2:10000"
+                env: 2
+                key: "ptr_41j9uutQEWcD8tHovrOddrt0sNIVKP6ggnCm5+KNopk="
+    - DNS:
+        - Pi-Hole1:
+            icon: pi-hole.svg
+            href: "http://pihole.homelab.local:50080/admin"
+            description: quasar
+            widget:
+                type: pihole
+                url: "http://192.168.2.2:50080"
+                key: "57afd33f7d8b48f492a00a0d8afff3c3ca16d5f2bb9df1be8620b652522ce906"
+    - Network:
+        - UniFi:
+            icon: unifi.svg
+            href: "{{HOMEPAGE_VAR_UNIFI_NETWORK_URL}}"
+            description: network
+            widget:
+                type: unifi
+                url: "{{HOMEPAGE_VAR_UNIFI_NETWORK_URL}}"
+                username: "{{HOMEPAGE_VAR_UNIFI_NETWORK_USERNAME}}"
+                password: "{{HOMEPAGE_VAR_UNIFI_NETWORK_PASSWORD}}"
+        - Uptime Kuma:
+            icon: uptime-kuma.svg
+            href: "{{HOMEPAGE_VAR_UPTIME_KUMA_URL}}"
+            description: internal
+            widget:
+                type: uptimekuma
+                url: "{{HOMEPAGE_VAR_UPTIME_KUMA_URL}}"
+                slug: home
+        - Uptime Robot:
+            icon: https://play-lh.googleusercontent.com/cUrv0t00FYQ1GKLuOTvv8qjo1lSDjqZC16IOp3Fb6ijew6Br5m4o16HhDp0GBu_Bw8Y=w240-h480-rw
+            href: https://uptimerobot.com/dashboard
+            description: external
+            widget:
+                type: uptimerobot
+                url: https://api.uptimerobot.com
+                key: "{{HOMEPAGE_VAR_UPTIME_ROBOT_API_KEY}}"
+    - Storage:
+        - OpenMediaVault:
+            icon: openmediavault.svg
+            href: "http://omv.homelab.local:8088"
+            description: scale
+            widget:
+                type: openmediavault
+                url: http://192.168.2.2:8088
+                username: admin
+                password: rcdc103175
+                method: services.getStatus
+        - MinIO:
+            icon: minio.svg
+            href: "{{HOMEPAGE_VAR_MINIO_URL}}"
+            description: object storage      
+    
+    - Utilities:
+        - Paperless:
+            icon : paperless-ngx.svg
+            href: https://paperless.coderstudio.co
+            description: files
+            widget: 
+              type: paperlessngx
+              url: https://paperless.coderstudio.co
+              key: "351e956e81ccefa4faf035c19b3d8ff991aa7923"
+    - Media:
+        - Plex:
+            icon: plex.svg
+            href: "https://plex.coderstudio.co"
+            description: media server
+            widget:
+                type: plex
+                url: "https://plex.coderstudio.co"
+                key: "zrsFydLsEDxmnQPxYCg7"
+        - Tautulla:
+            icon: tautulli.svg
+            href: "{{HOMEPAGE_VAR_TAUTULLI_URL}}"
+            description: plex stats
+            widget:
+                type: tautulli
+                url: "{{HOMEPAGE_VAR_TAUTULLI_URL}}"
+                key: "{{HOMEPAGE_VAR_TAUTULLI_API_KEY}}"
+        - HDHomerun:
+            icon: hdhomerun.png
+            href: "{{HOMEPAGE_VAR_HDHOMERUN_URL}}"
+            description: flex 4k
+            widget:
+                type: hdhomerun
+                url: "{{HOMEPAGE_VAR_HDHOMERUN_URL}}"
+    - Remote Access:
+        - Coder:
+            icon: coder.svg
+            href: "{{HOMEPAGE_VAR_PIKVM_URL}}"
+            description: remote vscode
+        
+    - Home Automation:
+        - Home Assistant:
+            icon: home-assistant.svg
+            href: "{{HOMEPAGE_VAR_HOME_ASSISTANT_URL}}"
+            description: home
+            widget:
+                type: homeassistant
+                url: "{{HOMEPAGE_VAR_HOME_ASSISTANT_URL}}"
+                key: "{{HOMEPAGE_VAR_HOME_ASSISTANT_API_KEY}}"
+        
+          
+  widgets:
+    - logo:
+        icon: https://coderstudio.s3.us-west-2.amazonaws.com/coderstudio-logo-removebg-preview.png
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short
+    - resources:
+        # change backend to 'kubernetes' to use Kubernetes integration. Requires RBAC.
+        backend: resources
+        expanded: true
+        cpu: true
+        memory: true
+        disk: /
+    - search:
+        provider: duckduckgo
+        target: _blank
+    ## Uncomment to enable Kubernetes integration
+    - kubernetes:
+        cluster:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: true
+          cpu: true
+          memory: true
+          showLabel: true
+  kubernetes:
+    # change mode to 'cluster' to use RBAC service account
+    mode: cluster
+  docker:
+  settings:
+    title: "CoderStudio | Home"
+
+    background:
+      image: https://cdna.artstation.com/p/assets/images/images/019/320/618/large/felix-volrado-3-8.jpg
+      blur: sm 
+      saturate: 100 
+      brightness: 50
+      opacity: 100
+
+    theme: dark
+    color: slate
+
+    useEqualHeights: true
+
+    layout:
+      Hypervisor:
+        header: true
+        style: row
+        columns: 4
+      Containers:
+        header: true
+        style: row
+        columns: 4
+      DNS:
+        header: true
+        style: row
+        columns: 4
+      Network:
+        header: true
+        style: row
+        columns: 4
+      Remote Access:
+        header: true
+        style: row
+        columns: 4
+      Storage:
+        header: true
+        style: row
+        columns: 4
+      Media:
+        header: true
+        style: row
+        columns: 4
+      Home Automation:
+        header: true
+        style: row
+        columns: 4
+      Developer:
+        header: true
+        style: row
+        columns: 4
+      Utilities:
+        header: true
+        style: row
+        columns: 4
+      
+    
+persistence:
+  logs:
+    enabled: true
+    type: emptyDir
+    mountPath: /app/config/logs
+
+# resources:
+#   requests:
+#     memory: 10Mi
+#     cpu: 10m
+#   limits:
+#     memory: 200Mi
+#     cpu: 500m
